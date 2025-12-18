@@ -1,0 +1,46 @@
+From b95b87f76baa4e926138133f39e1167248a70069 Mon Sep 17 00:00:00 2001
+From: tikanpet <tikanderp@gmail.com>
+Date: Tue, 29 Apr 2025 17:01:21 +0300
+Subject: [PATCH] Added-FIT-image
+
+Upstream-Status: Pending
+Signed-off-by: tikanpet <tikanderp@gmail.com>
+---
+ configs/rpi_arm64_defconfig | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
+
+diff --git a/configs/rpi_arm64_defconfig b/configs/rpi_arm64_defconfig
+index f9dade18f6..00c67c0163 100644
+--- a/configs/rpi_arm64_defconfig
++++ b/configs/rpi_arm64_defconfig
+@@ -8,7 +8,7 @@ CONFIG_ENV_SIZE=0x4000
+ CONFIG_DEFAULT_DEVICE_TREE="bcm2711-rpi-4-b"
+ CONFIG_OF_LIBFDT_OVERLAY=y
+ CONFIG_DM_RESET=y
+-CONFIG_SYS_LOAD_ADDR=0x1000000
++CONFIG_SYS_LOAD_ADDR=0x10000000
+ CONFIG_PCI=y
+ CONFIG_BOOTSTD_DEFAULTS=y
+ CONFIG_OF_BOARD_SETUP=y
+@@ -57,3 +57,18 @@ CONFIG_SYS_WHITE_ON_BLACK=y
+ CONFIG_VIDEO_BCM2835=y
+ CONFIG_CONSOLE_SCROLL_LINES=10
+ CONFIG_PHYS_TO_BUS=y
++CONFIG_FIT=y
++CONFIG_FIT_EXTERNAL_OFFSET=0x0
++CONFIG_FIT_FULL_CHECK=y
++CONFIG_FIT_SIGNATURE=y
++CONFIG_FIT_SIGNATURE_MAX_SIZE=0x10000000
++# CONFIG_FIT_RSASSA_PSS is not set
++# CONFIG_FIT_CIPHER is not set
++CONFIG_FIT_VERBOSE=y
++# CONFIG_FIT_BEST_MATCH is not set
++CONFIG_FIT_PRINT=y
++# CONFIG_SPL_LOAD_FIT_FULL is not set
++CONFIG_USE_BOOTARGS=y
++CONFIG_BOOTARGS="console=ttyS0,115200 root=/dev/mmcblk0p2 rootfstype=ext4 rootwait rw"
++# CONFIG_BOOTARGS_SUBST is not set
++CONFIG_BOOTCOMMAND="fatload mmc 0:1 ${loadaddr} fitImage; bootm ${loadaddr}"
+-- 
+2.34.1
+
