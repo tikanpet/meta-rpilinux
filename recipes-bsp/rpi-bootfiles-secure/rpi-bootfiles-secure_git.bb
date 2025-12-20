@@ -44,8 +44,56 @@ do_deploy() {
     install -d ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}
     install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
     install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+    install -d ${STAGING_DIR_TARGET}/eeprom_bootloader
 
-    # gather deployed boot-files (bootloaders etc) from DEPLOY-folders to staging-dir:
+    # -------------------------------------------------------------------------------
+    #               Secure eeprom-bootloader
+
+    # Sign boot-config with private RSA-key 
+    # This config (/secure-boot-recovery/boot.conf) contains flag 'SIGNED_BOOT=1',
+    # but no OTP-settings, so it's still possible to roll back to non-secure world!
+
+    ${S}/rpi-eeprom/rpi-eeprom-digest \
+    -k ${TOPDIR}/conf/private.pem \
+    -i ${S}/secure-boot-recovery/boot.conf \
+    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig    
+
+    # Create secure eeprom-bootloader
+
+    ${S}/rpi-eeprom/rpi-eeprom-config \
+    -p ${TOPDIR}/conf/public.pub \
+    -c ${S}/secure-boot-recovery/boot.conf \
+    -d ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig \
+    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin \
+       ${S}/rpi-eeprom/firmware-2711/latest/pieeprom-2025-08-27.bin
+
+   #  Signature-file (SHA256 checksum) for eeprom-bootloader  
+
+    ${S}/rpi-eeprom/rpi-eeprom-digest \
+    -i ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin \
+    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig
+
+
+    # Deploy recovery.bin, secured eeprom-bootloader and signature:
+
+    # recovery.bin on SD-card's boot-partition triggers the update-process of eeprom-bootloader  
+    cp ${S}/rpi-eeprom/firmware-2711/latest/recovery.bin ${DEPLOYDIR}
+
+    # If pieeprom.bin is renamed as pieeprom.upd, recovery.bin is renamed to RECOVERY.000
+    # after succeeded flashing of new eeprom-bootloader.
+    # This avoids the bootloader to be flashed again and again after next boot-ups!
+    # I'll still keep here 'pieeprom.bin' (and rename manually recovery.bin on SD-card),
+    # because this way RaspberryPI's leds (green/red) indicate the progress of the flashing.
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.bin
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig ${DEPLOYDIR}/pieeprom.sig
+
+    # -------------------------------------------------------------------------------
+    
+    # Secure eeprom-bootloader is now deployed.
+    # Gather other boot-files (start.elf-bootloader, kernel, device trees etc.) from DEPLOY-folders 
+    # to staging-dir, store those files to boot.img. Create boot.sig. Finally deploy boot.img and boot.sig.  
 
     # start.elf, fixup.dat etc.
     for i in ${DEPLOY_DIR_IMAGE}/${BOOTFILES_DIR_NAME}/* ; do

@@ -7,6 +7,9 @@ HOSTTOOLS += "mcopy mren mkfs.fat openssl xxd"
 
 IMAGE_BOOT_FILES = "boot.img \
                  boot.sig \
+                 recovery.bin \
+                 pieeprom.bin \
+                 pieeprom.sig \
                  "
 
 do_image_wic[depends] += " \
