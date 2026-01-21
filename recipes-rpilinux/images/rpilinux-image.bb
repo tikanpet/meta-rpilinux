@@ -5,12 +5,12 @@ IMAGE_INSTALL += "openssh openssl openssh-sftp-server"
 
 HOSTTOOLS += "mcopy mren mkfs.fat openssl xxd"
 
-IMAGE_BOOT_FILES = "boot.img \
-                 boot.sig \
-                 recovery.bin \
-                 pieeprom.bin \
-                 pieeprom.sig \
-                 "
+IMAGE_BOOT_FILES = "boot.img boot.sig"
+IMAGE_BOOT_FILES += " \
+	${@bb.utils.contains('RPI_EEPROM_BOOTLOADER', '1', \
+		'recovery.bin pieeprom.bin pieeprom.sig', \
+		' ', d)} \
+	"
 
 do_image_wic[depends] += " \
     rpi-bootfiles-secure:do_deploy \
