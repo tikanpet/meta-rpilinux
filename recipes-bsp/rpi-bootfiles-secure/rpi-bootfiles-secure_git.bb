@@ -71,10 +71,10 @@ rpi_secure_eeprom_bootloader() {
     # recovery.bin on SD-card's boot-partition triggers the update-process of eeprom-bootloader  
     cp ${S}/rpi-eeprom/firmware-2711/latest/recovery.bin ${DEPLOYDIR}
 
-    # If pieeprom.bin below is renamed as pieeprom.upd, recovery.bin is renamed to RECOVERY.000
+    # If 'pieeprom.bin' below was renamed as 'pieeprom.upd', 'recovery.bin' would be renamed to 'RECOVERY.000'
     # after succeeded flashing of new eeprom-bootloader.
     # This avoids the bootloader to be flashed again and again after next boot-ups!
-    # I'll still keep here 'pieeprom.bin' (and rename manually recovery.bin on SD-card),
+    # I'll still keep here 'pieeprom.bin' (and rename manually 'recovery.bin' on SD-card after flashing),
     # because this way RaspberryPI's leds (green/red) indicate the progress of the flashing.
 
     cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.bin
@@ -88,11 +88,11 @@ do_deploy() {
     install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
     install -d ${STAGING_DIR_TARGET}/eeprom_bootloader
 
-    if ${@bb.utils.contains('RPI_EEPROM_BOOTLOADER', '1', 'true', 'false', d)}; then
+    # create secure eeprom-bootloader (if update-flag set)
+    if ${@bb.utils.contains('RPI_EEPROM_BOOTLOADER_UPDATE', '1', 'true', 'false', d)}; then
         rpi_secure_eeprom_bootloader
     fi
     
-    # Secure eeprom-bootloader is now deployed.
     # Gather other boot-files (start.elf, fixup.dat, kernel, device trees etc.) from DEPLOY-folders 
     # to staging-dir, store those files to boot.img. Create boot.sig. Finally deploy boot.img and boot.sig.  
 
@@ -117,30 +117,40 @@ do_deploy() {
         cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
     done
 
-    # a bit unsure, if this U-boot's boot-script is needed, because boot-instructions for u-boot
-    # are patched into the U-Boot configuration file
-    #cp ${DEPLOY_DIR_IMAGE}/boot.scr ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
-
     # Include kernel (kernel8.img) to boot.img: 
     #   seems that mcopy (used by rpi-make-boot-image) cannot copy '.img' -file directly inside boot.img
     #   -> copy without '.img'-extension, and rename back to kernel8.img using mren-tool
+    # Notice that if U-Boot has been enabled, 'start.elf' naturally runs U-Boot instead of kernel.
+    # So also U-Boot will be renamed to first to kernel8, and then to kernel8.img.  
 
-    #cp ${DEPLOY_DIR_IMAGE}/u-boot.bin ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/${SDIMG_KERNELIMAGE}
-    # So first strip .img extension from kernel-file:
-    cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} \
-       ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
+    # So strip .img extension from kernel-file:
+    if ${@bb.utils.contains('RPI_USE_U_BOOT', '1', 'true', 'false', d)}; then
+        cp ${DEPLOY_DIR_IMAGE}/u-boot.bin \
+           ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
 
-    # FIT-image (which includes Linux kernel with Rasperry PI's base-DTB and overlay-DTBs)
-    # TODO: if FIT-image has not been created, kernel and DTBs should be copied step by step...
-    #cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+            # a bit unsure, if U-Boot's boot-script is needed, because boot-instructions for U-Boot
+            # are patched into the U-Boot configuration file
+            cp ${DEPLOY_DIR_IMAGE}/boot.scr ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+
+        if ${@bb.utils.contains('KERNEL_IMAGETYPE_UBOOT', 'fitImage', 'true', 'false', d)}; then
+            # FIT-image (which contains these all: Linux kernel with Rasperry PI's base-DTB and overlay-DTBs)
+            # TODO: filter unnecessary copy of DTB and overlays above... 
+            cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+        # else: U-Boot loads kernel directly (not via FIT-image), so kernel should be copied here also...
+        #       But, this configuration is not supported, so U-boot and FIT-image should both be enabled... 
+        fi
+    else
+        cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} \
+           ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
+    fi
 
     # create boot.img using RPI's shell script
     ${S}/tools/rpi-make-boot-image  -b pi4 -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/ -o ${DEPLOYDIR}/boot.img
     
-    # return .img extension to kernel-file
+    # return '.img' extension to kernel-file
     mren -i "${DEPLOYDIR}/boot.img" $(basename  -s .img ${SDIMG_KERNELIMAGE}) ::${SDIMG_KERNELIMAGE}
 
-    # sign boot.img with private RSA-key
+    # create 'boot.sig' by signing 'boot.img' with private RSA-key
     ${S}/rpi-eeprom/rpi-eeprom-digest \
     -k ${TOPDIR}/conf/private.pem \
     -i ${DEPLOYDIR}/boot.img \

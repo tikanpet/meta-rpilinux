@@ -7,7 +7,7 @@ HOSTTOOLS += "mcopy mren mkfs.fat openssl xxd"
 
 IMAGE_BOOT_FILES = "boot.img boot.sig"
 IMAGE_BOOT_FILES += " \
-	${@bb.utils.contains('RPI_EEPROM_BOOTLOADER', '1', \
+	${@bb.utils.contains('RPI_EEPROM_BOOTLOADER_UPDATE', '1', \
 		'recovery.bin pieeprom.bin pieeprom.sig', \
 		' ', d)} \
 	"
