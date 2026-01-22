@@ -1,6 +1,6 @@
 SUMMARY = "Create RSA-secured boot-image with Raspberry PIx's shell-scripts"
-DESCRIPTION = "This repository uses the RPI4/RPI5 USB tools \
-e.g. for creating signed boot image (boot.img & boot.sig)"
+DESCRIPTION = "This repository uses the RPI4/RPI5 USB-boot tools \
+for creating signed boot image (boot.img & boot.sig)"
 LICENSE = "Broadcom-RPi"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 
@@ -88,60 +88,84 @@ do_deploy() {
     install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
     install -d ${STAGING_DIR_TARGET}/eeprom_bootloader
 
+    # Gather boot-files (start.elf, fixup.dat, kernel, device trees etc.) from DEPLOY-folders 
+    # to STAGING-dir. Store those files to boot.img.
+    # Sign boot.img by private RSA-key by creating boot.sig.
+    # Finally deploy boot.img and boot.sig.
+    # Optionally create secured EEPROM-bootloader, which is signed with same private RSA-key than boot.img.
+    # EEPROM-bootloader will be stored alongside boot.img and boot.sig.
+
     # create secure eeprom-bootloader (if update-flag set)
     if ${@bb.utils.contains('RPI_EEPROM_BOOTLOADER_UPDATE', '1', 'true', 'false', d)}; then
         rpi_secure_eeprom_bootloader
     fi
-    
-    # Gather other boot-files (start.elf, fixup.dat, kernel, device trees etc.) from DEPLOY-folders 
-    # to staging-dir, store those files to boot.img. Create boot.sig. Finally deploy boot.img and boot.sig.  
 
-    # start.elf, fixup.dat etc.
+    # Copy RPI-specific bootfiles (start.elf, fixup.dat etc)
     for i in ${DEPLOY_DIR_IMAGE}/${BOOTFILES_DIR_NAME}/* ; do
         cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
     done
 
-    # copy Device Tree Blobs of all RPI-models (bootloader will pickup the correct one during the boot-up)
+    # Include kernel (kernel8.img for RPI4/5), Device Tree Blobs, overlays and optionally InitRamFs to boot.img.
+    # If U-boot and FIT-image is enabled, include U-boot and FIT-image
+    # (FIT-image contains kernel, DTBs, DTB-overlays, InitRamFS).
 
-    for i in ${DEPLOY_DIR_IMAGE}/bcm2711-rpi*.dtb ; do
-        cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
-    done
-
-    # copy Device Tree Overlays
-
-    for i in ${DEPLOY_DIR_IMAGE}/*.dtbo ; do
-        cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
-    done
-
-    for i in ${DEPLOY_DIR_IMAGE}/overlay*.dtb ; do
-        cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
-    done
-
-    # Include kernel (kernel8.img) to boot.img: 
-    #   seems that mcopy (used by rpi-make-boot-image) cannot copy '.img' -file directly inside boot.img
+    # Seems that mcopy (used by rpi-make-boot-image) cannot copy '.img' -file directly inside boot.img
     #   -> copy without '.img'-extension, and rename back to kernel8.img using mren-tool
     # Notice that if U-Boot has been enabled, 'start.elf' naturally runs U-Boot instead of kernel.
-    # So also U-Boot will be renamed to first to kernel8, and then to kernel8.img.  
+    # So also U-Boot will be renamed first to kernel8, and then to kernel8.img.  
 
-    # So strip .img extension from kernel-file:
     if ${@bb.utils.contains('RPI_USE_U_BOOT', '1', 'true', 'false', d)}; then
+        # copy U-Boot (strip '.img'-extension from kernel-file):
         cp ${DEPLOY_DIR_IMAGE}/u-boot.bin \
            ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
 
-            # a bit unsure, if U-Boot's boot-script is needed, because boot-instructions for U-Boot
-            # are patched into the U-Boot configuration file
-            cp ${DEPLOY_DIR_IMAGE}/boot.scr ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+        # U-Boot's boot-script, possible not even needed, because boot-instructions for U-Boot
+        # are patched into the U-Boot's configuration file (recipes-bsb/u-boot: rpi_arm64_defconfig)
+        cp ${DEPLOY_DIR_IMAGE}/boot.scr ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
 
         if ${@bb.utils.contains('KERNEL_IMAGETYPE_UBOOT', 'fitImage', 'true', 'false', d)}; then
-            # FIT-image (which contains these all: Linux kernel with Rasperry PI's base-DTB and overlay-DTBs)
-            # TODO: filter unnecessary copy of DTB and overlays above... 
-            cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
-        # else: U-Boot loads kernel directly (not via FIT-image), so kernel should be copied here also...
-        #       But, this configuration is not supported, so U-boot and FIT-image should both be enabled... 
+            # Copy FIT-image, which contains all of these: 
+            # Linux kernel, Raspberry PI's base-DTB, overlay-DTBs, optionally InitRamFS
+
+            # Optionally InitRamFs
+            if ${@bb.utils.contains('INITRAMFS_IMAGE', 'customized-initramfs', 'true', 'false', d)}; then
+                # copy FIT-image included with initramfs
+                # (symbolic link to fitImage is e.g. 'fitImage-customized-initramfs-raspberrypi4-64-raspberrypi4-64')
+                cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE}-${INITRAMFS_IMAGE}-${MACHINE}-${MACHINE} \
+                   ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/${KERNEL_IMAGETYPE}
+            else
+                cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}                
+            fi
+        # else
+        #   U-Boot loads kernel directly (not via FIT-image), so kernel should be copied here...
+        #   But: this configuration is not supported, so U-boot and FIT-image MUST both be enabled... 
         fi
     else
+        # No U-Boot
+
+        # Copy Device Tree Blobs of all RPI-models (bootloader will pickup the correct one during the boot-up)
+        for i in ${DEPLOY_DIR_IMAGE}/bcm2711-rpi*.dtb ; do
+            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+        done
+
+        # Copy Device Tree Overlays
+        for i in ${DEPLOY_DIR_IMAGE}/*.dtbo ; do
+            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+        done
+        for i in ${DEPLOY_DIR_IMAGE}/overlay*.dtb ; do
+            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+        done
+
+        # Copy Linux Kernel (strip '.img'-extension from kernel-file):
         cp ${DEPLOY_DIR_IMAGE}/${KERNEL_IMAGETYPE} \
            ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
+
+        # Optionally InitRamFs
+        if ${@bb.utils.contains('INITRAMFS_IMAGE', 'customized-initramfs', 'true', 'false', d)}; then
+            # copy initramfs (rename deployed image to 'initramf.gz')
+            cp ${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES} \
+               ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/initramfs.${INITRAMFS_FSTYPES}
+        fi
     fi
 
     # create boot.img using RPI's shell script
