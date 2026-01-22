@@ -161,10 +161,12 @@ do_deploy() {
            ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/$(basename -s .img ${SDIMG_KERNELIMAGE})
 
         # Optionally InitRamFs
-        if ${@bb.utils.contains('INITRAMFS_IMAGE', 'customized-initramfs', 'true', 'false', d)}; then
-            # copy initramfs (rename deployed image to 'initramf.gz')
+        # If InitRamsFS is bundled into Linux kernel, it will not be included separately into boot.img.
+        if [ -n "${INITRAMFS_IMAGE}" -a -z "${INITRAMFS_IMAGE_BUNDLE}" ]; then
+            # Copy initramfs (e.g. 'customized-initramfs-raspberrypi4-64.cpio.gz').
+            # 'start.elf' needs to know this name, so it must be defined also in 'config.txt'...
             cp ${DEPLOY_DIR_IMAGE}/${INITRAMFS_IMAGE}-${MACHINE}.${INITRAMFS_FSTYPES} \
-               ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/initramfs.${INITRAMFS_FSTYPES}
+               ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/${INITRAMFS_IMAGE}.${INITRAMFS_FSTYPES}
         fi
     fi
 

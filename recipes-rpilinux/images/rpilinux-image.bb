@@ -12,6 +12,9 @@ IMAGE_BOOT_FILES += " \
 		' ', d)} \
 	"
 
+INITRAMFS_IMAGE = "customized-initramfs"
+INITRAMFS_SCRIPTS = "initramfs-boot"
+
 do_image_wic[depends] += " \
     rpi-bootfiles-secure:do_deploy \
     "
