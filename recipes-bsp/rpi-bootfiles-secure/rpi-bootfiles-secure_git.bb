@@ -1,6 +1,9 @@
 SUMMARY = "Create RSA-secured boot-image with Raspberry PIx's shell-scripts"
 DESCRIPTION = "This repository uses the RPI4/RPI5 USB-boot tools \
-for creating signed boot image (boot.img & boot.sig)"
+for creating signed boot image (boot.img & boot.sig) \
+and secure eeprom-bootloader for verifying and loading boot.img. \
+Also recovery.bin is deployed for updating eeprom-bootloader automatically \
+on the target device."
 LICENSE = "Broadcom-RPi"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 
@@ -49,13 +52,13 @@ rpi_secure_eeprom_bootloader() {
     # but no OTP-settings, so it's still possible to roll back to non-secure world!
 
     ${S}/rpi-eeprom/rpi-eeprom-digest \
-    -k ${TOPDIR}/conf/private.pem \
+    -k ${TOPDIR}/conf/private_sb.pem \
     -i ${S}/secure-boot-recovery/boot.conf \
     -o ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig
     # Create secure eeprom-bootloader
 
     ${S}/rpi-eeprom/rpi-eeprom-config \
-    -p ${TOPDIR}/conf/public.pub \
+    -p ${TOPDIR}/conf/public_sb.pub \
     -c ${S}/secure-boot-recovery/boot.conf \
     -d ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig \
     -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin \
@@ -68,7 +71,9 @@ rpi_secure_eeprom_bootloader() {
 
     # Deploy recovery.bin, secured eeprom-bootloader and signature:
 
-    # recovery.bin on SD-card's boot-partition triggers the update-process of eeprom-bootloader  
+    # recovery.bin on SD-card's boot-partition triggers the automatic update-process
+    # of eeprom-bootloader by first-stage ROM-bootloader.
+    # TODO: add support for RPI5 (2712-firmware)...
     cp ${S}/rpi-eeprom/firmware-2711/latest/recovery.bin ${DEPLOYDIR}
 
     # If 'pieeprom.bin' below was renamed as 'pieeprom.upd', 'recovery.bin' would be renamed to 'RECOVERY.000'
@@ -178,7 +183,7 @@ do_deploy() {
 
     # create 'boot.sig' by signing 'boot.img' with private RSA-key
     ${S}/rpi-eeprom/rpi-eeprom-digest \
-    -k ${TOPDIR}/conf/private.pem \
+    -k ${TOPDIR}/conf/private_sb.pem \
     -i ${DEPLOYDIR}/boot.img \
     -o ${DEPLOYDIR}/boot.sig
 
