@@ -24,9 +24,16 @@ if [ -z "$ROOT_DEVICE" ]; then
     exec sh
 fi
 
+# wait for root-device to appear
+# TODO: add some logic for not waiting for ever (if device not available at all)
 while [ ! -e "$ROOT_DEVICE" ]; do
     sleep 0.1
 done
+
+# this dummy delay is just for waiting for debug-messages to get
+# Cryptsetup's passphrase-query to be better seen after most of the messages 
+echo "Wait for most of the kernel debug-messages to be printed into the console..."
+sleep 4.0
 
 echo "Decrypting root file-system..."
 cryptsetup open $ROOT_DEVICE decrypt
@@ -37,6 +44,15 @@ if [ ! -e "/dev/mapper/decrypt" ]; then
 fi
 
 echo "Successfully decrypted!"
+
+if [ -n "/first_boot" ]; then
+    echo "This is first boot (brand new root file system). Resize the file system"
+    resize2fs /dev/mapper/decrypt
+
+    # remove first_boot file, so resize will not be done again during following bootups
+    rm /first_boot
+fi
+
 mount /dev/mapper/decrypt /newroot
 
 echo "Switching to real root filesystem..."
