@@ -16,5 +16,7 @@ python () {
             d.appendVar('IMAGE_BOOT_FILES',' recovery.bin pieeprom.bin pieeprom.sig')
         d.appendVarFlag('do_image_wic', 'depends', ' rpi-bootfiles-secure:do_deploy')
 #    else:  bb.parse.SkipRecipe("xx") ?
+    if d.getVar('LUKS2_ENCRYPT') == '1':
+        d.appendVarFlag('do_image_wic', 'depends', ' wic-encrypt-partition:do_patch')
 }
 
