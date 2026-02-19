@@ -237,34 +237,44 @@ Default for **INITRAMFS_FSTYPES** is **"cpio.gz"**.
 So gzipped file **customized-initramfs.cpio.gz** will be created.
 
 Next rule to 'config.txt' is added for indicating that Initramfs has to be loaded to RAM by 'start.elf' (see 'rpi-config_git.bbappend'):
+
    **initramfs ${INITRAMFS_IMAGE}.${INITRAMFS_FSTYPES} followkernel**
 
 Check that **Linux kernel** running in Raspberry PI **supports InitramFS** (should be enabled by default...),
-directly from '.config'-file  or by using e.g. 'menu-config' ('bitbake -c menuconfig virtual/kernel'):
+directly from '.config'-file  or by using e.g. 'menu-config' (**bitbake -c menuconfig virtual/kernel**):
 
+```
 General setup  ---> 
     [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support (**CONFIG_BLK_DEV_INITRD**)
     [*]   Support initial ramdisk/ramfs compressed using gzip (**CONFIG_INITRAMFS_COMPRESSION_GZIP=y**)
           (other compressions could be enabled as well...)
     ()    Initramfs source file(s) **CONFIG_INITRAMFS_SOURCE == ""**
-
+```
 Because Initramfs-image is NOT bundled into the kernel, Initramfs source file(s) will not be defined either.
 
-**DM-Crypt**
-Check that **kernel supports** the encryption (device mapper and crypt target). DM-crypt should be enabled as default...
+Kernel settings below are encryption-related, and should be enabled as default...
 
-    Device Drivers --->  [*] Multiple devices driver support (RAID and LVM) ->
-                     <*> Device mapper support
-                     <*> Crypt target support
-  [*] Cryptographic API -> 
-         Public-key cryptography  ---> -*- RSA (and DH?)
-         Block ciphers ---> <*> AES (Advanced Encryption Standard)
-         Hashes, digests, and MACs  ---> -*- SHA-224 and SHA-256 
-         Length-preserving ciphers and modes ---> <*> XTS (XOR Encrypt XOR with ciphertext stealing)
-         Userspace interface --->  <*> Hash algorithms 
-                                   <*> Symmetric key cipher algorithms
-
-
+Check that **kernel supports DM-Crypt** (device mapper and crypt target).
+```
+[*] Enable loadable module support  --->
+Device Drivers --->
+  [*] Multiple devices driver support (RAID and LVM)  --->
+    <*> Device mapper support 
+    <*> Crypt target support 
+```
+Check that next cryptographic API functions are enabled:
+```
+[*] Cryptographic API  --->
+  Block ciphers --->
+    <*> AES (Advanced Encryption Standard)
+  Length-preserving ciphers and modes --->
+    <*> XTS (XOR Encrypt XOR with ciphertext stealing) 
+  Hashes, digests, and MACS --->
+    <*> SHA-224 and SHA-256 
+  Userspace interface --->
+    <*> Hash algorithms
+    <*> Symmetric key cipher algorithms
+```
 Build the image for Raspberry PI4:
 ```
  bitbake rpilinux
@@ -294,27 +304,23 @@ sudo bmaptool -d copy tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberry
 ```
 
 ## TODO: 
--Raspberry PI5 uses other code-base for secure eeprom-bootloader.
-    rpi-bootfiles-secure.bb: recovery.bin and bootloader under the
-    '.../secure-boot-recovery5', .../rpi-eeprom/firmware2712
+-Raspberry PI5 uses other code-base for secure eeprom-bootloader.rpi-bootfiles-secure.bb: recovery.bin and bootloader under the
+ '.../secure-boot-recovery5', .../rpi-eeprom/firmware2712
 -rules for creating non-secure eeprom bootloader for turning back to non-secured world
-
 -CM:
-   - CM5 and newer seems to support -> could bootloader be updated, like for RPI4/RP5? 
-   - CM4 and CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from eMMC)
+   CM5 and newer seems to support -> could bootloader be updated, like for RPI4/RP5? 
+   CM4 and CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from eMMC)
    -> flash manually e.g. with 'rpiboot'-tool
-
 - LUKS-decryption: detect the luks.key from USB-stick...
-- Check is it easy to add aes-adiantum (instead of aes-xts-plain64) for Raspberry PI4
-
+- Check if it is easy to add aes-adiantum (instead of aes-xts-plain64) for Raspberry PI4
 - In some point I could offer the LUKS-encryption-function also to Poky's upstream.
   But the encryption-routine could be expanded first to support other partition-types (like 'btrfs').
   Possibly the encryption could also be enabled (for dedicated partitions) e.g. from Kickstart-file (WKS)
   instead of 'LUKS2_ENCRYPT'-flag.
 - Check if it's possible to add U-Boot support for Secure boot:
-      U-boot is succesfully loaded from boot.img, but it cannot load FIT-image.
-      U-boot recognizes only boot.img, but cannot extract the content (e.g. no mount-support)
-      U-boot can bind files in host-mode (uboot-version running in PC), so perhaps the logic is available...
+  U-boot is successfully loaded from boot.img, but it cannot load FIT-image.
+  U-boot recognizes only boot.img, but cannot extract the content (e.g. no mount-support).
+  U-boot can bind files in host-mode (uboot-version running in PC), so perhaps the logic is available...
 
 ## Optionally add U-boot
 
