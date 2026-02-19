@@ -62,8 +62,9 @@ Unlike Secure boot, LUKS2 is synchronous (symmetric) key algorithm. So same cryp
 
 Encrypted file-system is a LUKS2-container, which will be opened by the user-specified key (interactive passphrase or key-file).
 From 'Cryptsetup --help':
-    *Default compiled-in key and passphrase parameters:*
-       *Maximum keyfile size: 8192kB, Maximum interactive passphrase length 512 (characters)*
+
+ *Default compiled-in key and passphrase parameters:*
+ *Maximum keyfile size: 8192kB, Maximum interactive passphrase length 512 (characters)*
 
 Up to eight keys can be stored into LUKS2-header, but two keys are used: 'random number' key-file and 'passphrase' key.
 Both can naturally be used for encryption/decryption of the filesystem, but only random key is used in the encryption phase,
@@ -245,10 +246,10 @@ directly from '.config'-file  or by using e.g. 'menu-config' (**bitbake -c menuc
 
 ```
 General setup  ---> 
-    [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support (**CONFIG_BLK_DEV_INITRD**)
-    [*]   Support initial ramdisk/ramfs compressed using gzip (**CONFIG_INITRAMFS_COMPRESSION_GZIP=y**)
+    [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support (CONFIG_BLK_DEV_INITRD)
+    [*]   Support initial ramdisk/ramfs compressed using gzip (CONFIG_INITRAMFS_COMPRESSION_GZIP=y)
           (other compressions could be enabled as well...)
-    ()    Initramfs source file(s) **CONFIG_INITRAMFS_SOURCE == ""**
+    ()    Initramfs source file(s) (CONFIG_INITRAMFS_SOURCE == "")
 ```
 Because Initramfs-image is NOT bundled into the kernel, Initramfs source file(s) will not be defined either.
 
@@ -259,21 +260,21 @@ Check that **kernel supports DM-Crypt** (device mapper and crypt target).
 [*] Enable loadable module support  --->
 Device Drivers --->
   [*] Multiple devices driver support (RAID and LVM)  --->
-    <*> Device mapper support 
-    <*> Crypt target support 
+    <*> Device mapper support (CONFIG_BLK_DEV_DM)
+    <*> Crypt target support (CONFIG_DM_CRYPT)
 ```
 Check that next cryptographic API functions are enabled:
 ```
 [*] Cryptographic API  --->
   Block ciphers --->
-    <*> AES (Advanced Encryption Standard)
+    <*> AES (Advanced Encryption Standard) (CONFIG_CRYPTO_AES)
   Length-preserving ciphers and modes --->
-    <*> XTS (XOR Encrypt XOR with ciphertext stealing) 
+    <*> XTS (XOR Encrypt XOR with ciphertext stealing) (CONFIG_CRYPTO_XTS)
   Hashes, digests, and MACS --->
-    <*> SHA-224 and SHA-256 
+    <*> SHA-224 and SHA-256 (CONFIG_CRYPTO_SHA256)
   Userspace interface --->
-    <*> Hash algorithms
-    <*> Symmetric key cipher algorithms
+    <*> Hash algorithms (CONFIG_CRYPT_USER_API_HASH)
+    <*> Symmetric key cipher algorithms (CONFIG_CRYPTO_USER_API_SKCIPHER)
 ```
 Build the image for Raspberry PI4:
 ```
@@ -304,11 +305,10 @@ sudo bmaptool -d copy tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberry
 ```
 
 ## TODO: 
--Raspberry PI5 uses other code-base for secure eeprom-bootloader.rpi-bootfiles-secure.bb: recovery.bin and bootloader under the
+- Raspberry PI5 uses other code-base for secure eeprom-bootloader.rpi-bootfiles-secure.bb: recovery.bin and bootloader under the
  '.../secure-boot-recovery5', .../rpi-eeprom/firmware2712
--rules for creating non-secure eeprom bootloader for turning back to non-secured world
--CM:
-   CM5 and newer seems to support -> could bootloader be updated, like for RPI4/RP5? 
+- rules for creating non-secure eeprom bootloader for turning back to non-secured world
+- Compute Module: CM5 and newer seems to support -> could bootloader be updated, like for RPI4/RP5? 
    CM4 and CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from eMMC)
    -> flash manually e.g. with 'rpiboot'-tool
 - LUKS-decryption: detect the luks.key from USB-stick...
