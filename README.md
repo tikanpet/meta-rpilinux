@@ -49,11 +49,12 @@ With 'meta-rpilinux' meta-layer, you can do first steps towards the final secure
 
 'rpi-bootfiles-secure.bb'-recipe contains all rules, where helper scripts from [USB-boot tools](https://github.com/raspberrypi/usbboot/tree/master) are used, like rpi-eeprom-config, rpi-eeprom-digest and rpi-make-boot-image.
 
-Notice that because **SIGNED_BOOT**-flag is set to 1 in '/secure-boot-recovery/boot.conf', eeprom-bootloader accepts only signed boot.img files. 
+Notice that because **SIGNED_BOOT**-flag is set to 1 in '/secure-boot-recovery/boot.conf', eeprom-bootloader starts to accept only signed boot.img files. 
 
 If **program_pubkey** was set to 1 in 'boot.conf', secure-boot would be locked for good. Check also from Raspberry PI's manuals for the last steps (enabling **nRPI_boot**, fusing of public RSA-key in OTP etc). After that there is no 'turn back to non-secure boot'-option anymore (on B1/C0 stepping).
 
 ## LUKS2-Encryption/decryption of the root-file system using Cryptsetup
+Raspberry PI 4 (and 5) stores also filesystem into SD-card. Because SD-card is easily removable from the device, it could be good idea to secure also partition(s) containing e.g. root-filesystem.
 
 Cryptsetup is used for encrypting/decrypting a single partition of the file-system. Cryptsetup is a frontend (command-line utility) for
 actual crypto-functionality executed in the Linux kernel-side (**dm-crypt**). Cryptsetup employs also LUKS (Linux Unified Key Setup) for metadata management, like for storing cryptographic keys. LUKS2-version (default) is used. LUKS2 reserves 16 MB header-section for metadata, which is written into the beginning of the partition. It could be exluded into the separate header-file as well, but this meta-layer doesn't support the header-stripping. 
@@ -81,7 +82,7 @@ Adiantum is a high-performance encryption alternative, providing much faster dis
 
 A partition containing rootfile-system is encrypted during 'bitbaking' the image.
 Cryptsetup is disallowed to ask any confirmation. Otherwise Yocto will complain, and the build will fail.
-Therefore, a 'random-value' keyfile is used instead of asking a passphrase from the user. Also batch-mode is enabled.
+Therefore, a 'random-value' keyfile is used instead of asking a passphrase from the user. Also batch-mode has to be enabled.
 To avoid root-accesses, Yocto's WIC-image functionality hasn't used any '/dev'-interface (like /dev/loop/) when formatting the EXTx-partition (and storing the file system there). Instead a file (sparse type) was created for EXTx-format. But now when adding encryption-logic, Cryptsetup accesses other root-directory '/run' by default. **'--disable-locks'**-option is used for allowing Cryptsetup to be executed without 'sudo'.
 
 Encryption is done after, the rootfs-data is written to the partition (using **'--reencrypt'** option). That's mostly because of avoiding usage of '/dev/mapper/...' device, if encryption was done by 'luksFormat',..., 'open' etc.
@@ -91,11 +92,12 @@ See details in comments from patch-file appended by 'wic-encrypt-partition.bb'. 
 ### Decrypting
 
 Cryptsetup and resize2fs are used. Default mode is to ask passphrase from the user (your 'passphrase_luks.key').
-Also batch-mode has been disabled for Cryptsetup.
+Batch-mode is not used for Cryptsetup.
 
 Passphrase is used, because no key-file cannot be stored into the non-encrypted (boot) partition (into initramfs),
-It's relatively easy to steal the key(s) from the boot-partition by the hacker. So the user is advised to type the passphrase.
-Optionally keyfile could be used, if it's detected e.g. from USB-stick (not supported yet).
+It's relatively easy to steal the key(s) from the boot-partition (even secure boot) by the hacker.
+So the user is advised to type the passphrase. Optionally keyfile could be used, if it's detected
+e.g. from USB-stick (not supported yet).
 
 Keyfile could be stored into Raspberry PI's OTP memory as well. USB-boot tools contains 'rpi-otp-private-key' script
 for storing and reading the key. But it's not supported in this meta-layer, and I'm a bit sceptical,
@@ -165,10 +167,11 @@ Random key (e.g. 4 KB):
    dd if=/dev/random of=luks.key bs=512 count=8
    # or openssl genrsa 4096 > luks.key
 
-Passphrase (e.g. 32 characters):
+Passphrase (e.g. up to 32 characters):
    dd if=/dev/random bs=32 count=1 of=passphrase_luks.key
    printf "Type here some passphrase for starting the decryption..." > passphrase_luks.key
    # some special characters (e.g. ',.;) are recommended (to improve security)
+
 Copy 'luks.key' and 'passphrase_luks.key' to '...poky/build/conf'-directory
 ```
 Random-key file and passphrase-key are added during the encryption into LUKS2-header.
@@ -203,7 +206,7 @@ WICVARS:append = " LUKS2_ENCRYPT"
 LUKS2_ENCRYPT = "1"
 ```
 
-**HOSTTOOLS**-variable publishes the tools installed in your native Linux-distro also in Yocto-environment.
+**HOSTTOOLS**-variable publishes the tools (installed in your native Linux-distro) also in Yocto-environment.
 Notice that 'boot.img' can be created even without using 'mcopy', but '/dev/loop'-device is needed,
 ending up that Yocto-environment isn't sudoless anymore... See USB-boot tools: 'rpi-make-boot-image.sh'
 
@@ -241,7 +244,7 @@ Next rule to 'config.txt' is added for indicating that Initramfs has to be loade
 
    **initramfs ${INITRAMFS_IMAGE}.${INITRAMFS_FSTYPES} followkernel**
 
-Check that **Linux kernel** running in Raspberry PI **supports InitramFS** (should be enabled by default...),
+Check that **Linux kernel** running in Raspberry PI **supports InitramFS** (should be already enabled by default...),
 directly from '.config'-file  or by using e.g. 'menu-config' (**bitbake -c menuconfig virtual/kernel**):
 
 ```
@@ -253,7 +256,7 @@ General setup  --->
 ```
 Because Initramfs-image is NOT bundled into the kernel, Initramfs source file(s) will not be defined either.
 
-Kernel settings below are encryption-related, and should be enabled as default...
+Kernel settings below are encryption-related, and should already be enabled as default...
 
 Check that **kernel supports DM-Crypt** (device mapper and crypt target).
 ```
@@ -292,10 +295,12 @@ If LUKS2_ENCRYPT=0:
 ```
 If LUKS2_ENCRYPT=1, partition 2 (ext4) cannot be accessed with list-command.
 
-You can list e.g. FAT16-partition for checking attached bootfiles ('boot.img' etc): 
-   wic ls tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberrypi4-64.rootfs-20251215221802.wic:1
+You can list e.g. FAT16-partition for checking attached bootfiles ('boot.img' etc):
 
-Image can be written to SD-card e.g. with bmaptool (on Debian-distributions: 'sudo apt install bmap-tools')
+  wic ls tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberrypi4-64.rootfs-20251215221802.wic:1
+
+Image can be written to SD-card e.g. with bmaptool (on Debian-distributions: **sudo apt install bmap-tools**).
+
 First after inserting SD-card into PC, check if any partitions (like /dev/mmcblk0p1) are automounted, and unmount those.
 
 Then flash the image:
