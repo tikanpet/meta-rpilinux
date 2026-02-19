@@ -13,7 +13,7 @@ python () {
         # override default setting for IMAGE_BOOT_FILES (defined in Machine-configuration)
         d.setVar('IMAGE_BOOT_FILES', "boot.img boot.sig")
         if d.getVar('RPI_EEPROM_BOOTLOADER_UPDATE') == '1':
-            d.appendVar('IMAGE_BOOT_FILES',' recovery.bin pieeprom.bin pieeprom.sig')
+            d.appendVar('IMAGE_BOOT_FILES',' recovery.bin pieeprom.upd pieeprom.sig')
         d.appendVarFlag('do_image_wic', 'depends', ' rpi-bootfiles-secure:do_deploy')
 #    else:  bb.parse.SkipRecipe("xx") ?
     if d.getVar('LUKS2_ENCRYPT') == '1':

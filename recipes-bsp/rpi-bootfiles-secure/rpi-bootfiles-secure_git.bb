@@ -73,16 +73,19 @@ rpi_secure_eeprom_bootloader() {
 
     # recovery.bin on SD-card's boot-partition triggers the automatic update-process
     # of eeprom-bootloader by first-stage ROM-bootloader.
-    # TODO: add support for RPI5 (2712-firmware)...
     cp ${S}/rpi-eeprom/firmware-2711/latest/recovery.bin ${DEPLOYDIR}
 
-    # If 'pieeprom.bin' below was renamed as 'pieeprom.upd', 'recovery.bin' would be renamed to 'RECOVERY.000'
-    # after succeeded flashing of new eeprom-bootloader.
-    # This avoids the bootloader to be flashed again and again after next boot-ups!
-    # I'll still keep here 'pieeprom.bin' (and rename manually 'recovery.bin' on SD-card after flashing),
-    # because this way RaspberryPI's leds (green/red) indicate the progress of the flashing.
+    # TODO: add support for RPI5 (2712-firmware)...
 
-    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.bin
+    # Because eeprom-bootloader below is named as 'pieeprom.upd', 'recovery.bin' will be renamed
+    # automatically to 'RECOVERY.000' after succeeded flashing of the new eeprom-bootloader.
+    # This avoids the bootloader to be flashed again and again after next boot-ups!
+
+    # If eeprom_bootloader was named to 'pieeprom.bin', RaspberryPI's leds (green/red)
+    # would indicate the progress of the flashing. In this case remember to rename (or remove)
+    # manually 'recovery.bin' on SD-card after flashing.
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.upd
 
     cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig ${DEPLOYDIR}/pieeprom.sig
 }
