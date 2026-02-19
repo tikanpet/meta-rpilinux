@@ -1,0 +1,1742 @@
+/dts-v1/;
+
+/ {
+        description = "Kernel fitImage for Poky (Yocto Project Reference Distro)/6.6.63+git/raspberrypi4-64";
+        #address-cells = <1>;
+
+        images {
+                kernel-1 {
+                        description = "Linux kernel";
+                        data = /incbin/("linux.bin");
+                        type = "kernel";
+                        arch = "arm64";
+                        os = "linux";
+                        compression = "gzip";
+                        load = <0x00008000>;
+                        entry = <0x00008000>;
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-bcm2711-rpi-4-b.dtb {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-bcm2711-rpi-400.dtb {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/broadcom/bcm2711-rpi-400.dtb");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-bcm2711-rpi-cm4.dtb {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/broadcom/bcm2711-rpi-cm4.dtb");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-bcm2711-rpi-cm4s.dtb {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/broadcom/bcm2711-rpi-cm4s.dtb");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-overlay_map.dtb {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/overlay_map.dtb");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-at86rf233.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/at86rf233.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-disable-bt.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/disable-bt.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-disable-wifi.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/disable-wifi.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-dwc2.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/dwc2.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-gpio-ir.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/gpio-ir.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-gpio-ir-tx.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/gpio-ir-tx.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-gpio-key.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/gpio-key.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-gpio-poweroff.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/gpio-poweroff.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-gpio-shutdown.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/gpio-shutdown.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-amp.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-amp.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-amp100.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-amp100.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-amp3.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-amp3.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-amp4pro.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-amp4pro.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dac.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dac.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dacplus.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dacplus.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dacplusadc.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dacplusadc.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dacplusadcpro.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dacplusadcpro.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dacplusdsp.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dacplusdsp.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-dacplushd.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-dacplushd.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-digi-pro.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-digi-pro.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-hifiberry-digi.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/hifiberry-digi.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-justboom-both.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/justboom-both.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-justboom-dac.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/justboom-dac.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-justboom-digi.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/justboom-digi.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-i2c-gpio.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/i2c-gpio.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-i2c-rtc.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/i2c-rtc.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-imx219.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/imx219.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-imx477.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/imx477.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-imx708.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/imx708.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-iqaudio-dac.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/iqaudio-dac.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-iqaudio-dacplus.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/iqaudio-dacplus.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-mcp2515-can0.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/mcp2515-can0.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-mcp2515-can1.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/mcp2515-can1.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-mcp3008.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/mcp3008.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-miniuart-bt.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/miniuart-bt.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-pitft22.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/pitft22.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-pitft28-capacitive.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/pitft28-capacitive.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-pitft28-resistive.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/pitft28-resistive.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-pitft35-resistive.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/pitft35-resistive.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-pps-gpio.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/pps-gpio.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-rpi-ft5406.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/rpi-ft5406.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-rpi-poe.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/rpi-poe.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart0.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart0.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart0-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart0-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart1.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart1.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart1-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart1-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart2.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart2.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart2-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart2-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart3.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart3.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart3-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart3-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart4.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart4.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart4-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart4-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-uart5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/uart5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-fkms-v3d.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-fkms-v3d.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-fkms-v3d-pi4.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-fkms-v3d-pi4.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-kms-v3d.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-kms-v3d.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-kms-v3d-pi4.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-kms-v3d-pi4.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-kms-v3d-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-kms-v3d-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-kms-dsi-7inch.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-kms-dsi-7inch.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-vc4-kms-dsi-ili9881-7inch.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/vc4-kms-dsi-ili9881-7inch.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-rpi-backlight.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/rpi-backlight.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-w1-gpio.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/w1-gpio.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-w1-gpio-pullup.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/w1-gpio-pullup.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-w1-gpio-pi5.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/w1-gpio-pi5.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-wm8960-soundcard.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/wm8960-soundcard.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                fdt-bcm2712d0.dtbo {
+                        description = "Flattened Device Tree blob";
+                        data = /incbin/("arch/arm64/boot/dts/overlays/bcm2712d0.dtbo");
+                        type = "flat_dt";
+                        arch = "arm64";
+                        compression = "none";
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                ramdisk-1 {
+                        description = "customized-initramfs";
+                        data = /incbin/("/home/petteri/projects/yocto/poky/build/tmp/deploy/images/raspberrypi4-64/customized-initramfs-raspberrypi4-64.cpio.gz");
+                        type = "ramdisk";
+                        arch = "arm64";
+                        os = "linux";
+                        compression = "none";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+	};
+
+        configurations {
+                default = "conf-bcm2711-rpi-4-b.dtb";
+                conf-bcm2711-rpi-4-b.dtb {
+                        description = "1 Linux kernel, FDT blob, ramdisk";
+                        
+                        kernel = "kernel-1";
+                        fdt = "fdt-bcm2711-rpi-4-b.dtb";
+                        ramdisk = "ramdisk-1";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-bcm2711-rpi-400.dtb {
+                        description = "0 Linux kernel, FDT blob, ramdisk";
+                        
+                        kernel = "kernel-1";
+                        fdt = "fdt-bcm2711-rpi-400.dtb";
+                        ramdisk = "ramdisk-1";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-bcm2711-rpi-cm4.dtb {
+                        description = "0 Linux kernel, FDT blob, ramdisk";
+                        
+                        kernel = "kernel-1";
+                        fdt = "fdt-bcm2711-rpi-cm4.dtb";
+                        ramdisk = "ramdisk-1";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-bcm2711-rpi-cm4s.dtb {
+                        description = "0 Linux kernel, FDT blob, ramdisk";
+                        
+                        kernel = "kernel-1";
+                        fdt = "fdt-bcm2711-rpi-cm4s.dtb";
+                        ramdisk = "ramdisk-1";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-overlay_map.dtb {
+                        description = "0 Linux kernel, FDT blob, ramdisk";
+                        
+                        kernel = "kernel-1";
+                        fdt = "fdt-overlay_map.dtb";
+                        ramdisk = "ramdisk-1";
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-at86rf233.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-at86rf233.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-disable-bt.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-disable-bt.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-disable-wifi.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-disable-wifi.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-dwc2.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-dwc2.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-gpio-ir.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-gpio-ir.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-gpio-ir-tx.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-gpio-ir-tx.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-gpio-key.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-gpio-key.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-gpio-poweroff.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-gpio-poweroff.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-gpio-shutdown.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-gpio-shutdown.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-amp.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-amp.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-amp100.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-amp100.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-amp3.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-amp3.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-amp4pro.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-amp4pro.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dac.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dac.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dacplus.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dacplus.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dacplusadc.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dacplusadc.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dacplusadcpro.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dacplusadcpro.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dacplusdsp.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dacplusdsp.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-dacplushd.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-dacplushd.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-digi-pro.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-digi-pro.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-hifiberry-digi.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-hifiberry-digi.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-justboom-both.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-justboom-both.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-justboom-dac.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-justboom-dac.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-justboom-digi.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-justboom-digi.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-i2c-gpio.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-i2c-gpio.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-i2c-rtc.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-i2c-rtc.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-imx219.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-imx219.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-imx477.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-imx477.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-imx708.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-imx708.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-iqaudio-dac.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-iqaudio-dac.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-iqaudio-dacplus.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-iqaudio-dacplus.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-mcp2515-can0.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-mcp2515-can0.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-mcp2515-can1.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-mcp2515-can1.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-mcp3008.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-mcp3008.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-miniuart-bt.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-miniuart-bt.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-pitft22.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-pitft22.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-pitft28-capacitive.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-pitft28-capacitive.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-pitft28-resistive.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-pitft28-resistive.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-pitft35-resistive.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-pitft35-resistive.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-pps-gpio.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-pps-gpio.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-rpi-ft5406.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-rpi-ft5406.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-rpi-poe.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-rpi-poe.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart0.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart0.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart0-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart0-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart1.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart1.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart1-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart1-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart2.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart2.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart2-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart2-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart3.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart3.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart3-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart3-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart4.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart4.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart4-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart4-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-uart5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-uart5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-fkms-v3d.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-fkms-v3d.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-fkms-v3d-pi4.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-fkms-v3d-pi4.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-kms-v3d.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-kms-v3d.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-kms-v3d-pi4.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-kms-v3d-pi4.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-kms-v3d-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-kms-v3d-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-kms-dsi-7inch.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-kms-dsi-7inch.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-vc4-kms-dsi-ili9881-7inch.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-vc4-kms-dsi-ili9881-7inch.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-rpi-backlight.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-rpi-backlight.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-w1-gpio.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-w1-gpio.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-w1-gpio-pullup.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-w1-gpio-pullup.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-w1-gpio-pi5.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-w1-gpio-pi5.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-wm8960-soundcard.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-wm8960-soundcard.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+                
+                conf-bcm2712d0.dtbo {
+                        description = "0 FDT blob";
+                        
+                        
+                        fdt = "fdt-bcm2712d0.dtbo";
+                        
+                        
+                        
+                        hash-1 {
+                                algo = "sha256";
+                        };
+                };
+	};
+};
