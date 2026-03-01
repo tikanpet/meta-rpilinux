@@ -2,22 +2,22 @@
 Additional Yocto metalayer for Raspberry PI for Secure Boot and Secure root file system (LUKS2 encryption).
 Older versions than Raspberry 4 don't support secure boot.
 
-I have tested these new recipes in Raspberry PI4, because I don't own other Raspberry devices. Secure eeprom bootloader will need some
-update for Yocto-rules for Raspberry PI5 and Compute Modules. Otherwise anything here shouldn't be device-specific.
+I have tested these new recipes in Raspberry PI4, because I don't own other Raspberry devices.
 
 Also recipe for setting up U-boot (with FIT-image) is included. Unfortunately Secure Boot doesn't work yet,
 if U-boot is included into the secure boot-image...
 
-My focus here is mostly issues related in the securing process. So this meta-layer has instructions for creating a just small root-file
+My focus here is mostly issues related in the securing process. So this meta-layer has instructions for creating just a small root-file
 system (see rpilinux-image.bb), which herits just 'core-image-minimal.bb'. 
 
 ## Introduction to Secure Boot
 
 Secure Boot is a mechanism to secure components responsible for booting the device up (bootloaders, kernel, device-tree,
-optionally device-tree overlays and initramfs, configuration files) by the help of asynchronic (public/private) cryptographic keys.
-Bootfiles can NOT be ALTERED without knowing the key-pair. Notice that even secured bootfiles (e.g configuration) CAN be READ normally. 
+optionally device-tree overlays and initramfs, configuration files) by the help of asynchronic (private/public) cryptographic keys.
+Bootfiles are encrypted with private key and decrypted with public key. Bootfiles can NOT be ALTERED without knowing the public key.
+Notice that even secured bootfiles (e.g configuration) CAN be READ normally. 
 For that reason, if e.g. root-filesystem is encypted, the decryption key (which is actually same as encryption key) 
-for decrypting the filesystem cannot be stored even inside the secured boot-image.
+for decrypting the filesystem cannot be stored even inside the secured boot-partition.
 
 Raspberry PI's solution for Secure Boot is to create single image called 'boot.img' including all executables
 required to get RPI booted up, so at least:
@@ -30,10 +30,10 @@ See [Raspberry PI4 Boot Security](https://pip-assets.raspberrypi.com/categories/
 it with a private RSA-key. Secured signature is stored to 'boot.sig' file. EEPROM-bootloader running in RPI target
 device calculates the signature of the 'boot.img', opens the corresponding signature from 'boot.sig' with public
 RSA-key, and compares those signatures. If signatures match, booting process will continue. Naturally a hacker
-could create a new key-pair, but if public key is stored ('fused') to RPI's OTP-memory, it cannot be changed
-anymore by hacker's public key. And because private key is unique for single public key, it cannot be changed
-either. If someone without knowing the original private key tries to alter some of the boot-files, booting process
-will stop. In the future quantum-computer can possible calculate the private key from public key...
+could create a new key-pair, but if public key is stored ('fused') to RPI's OTP-memory (One Time Programmable),
+it cannot be changed anymore by hacker's public key. And because private key is unique for single public key,
+it cannot be changed either. If someone without knowing the original private key tries to alter some of the boot-files,
+booting process will stop. In the future quantum-computer can possible calculate the private key from public key...
 
 Notice that eeprom-bootloader is also secured by same signing principle. The first stage bootloader (ROM
 bootloader) can then start the eeprom-bootloader securely at the first place. Secure eeprom-bootloader can then
@@ -47,7 +47,11 @@ I myself unfortunately own only B0 stepping-board.
 
 With 'meta-rpilinux' meta-layer, you can do first steps towards the final secure-boot (creating secured eeprom-bootloader, boot.img and boot.sig), and get the good feeling about, how it works. If you hesitate, you can easily still flash the original non-secure eeprom bootloader, and continue without using 'boot.img' and 'boot.sig'.
 
-'rpi-bootfiles-secure.bb'-recipe contains all rules, where helper scripts from [USB-boot tools](https://github.com/raspberrypi/usbboot/tree/master) are used, like rpi-eeprom-config, rpi-eeprom-digest and rpi-make-boot-image.
+This metalayer has **no support** for creating a secured eeprom-bootloader for **Raspberry PI5/CM5**. Unlike BCM2711 (RPI4/CM4), BCM2712 SOC doesn't have support to test a secured eeprom-bootloader. But it's possible to check the signed boot.img by modifying 'config.txt':
+**boot_ramdisk = 1** ([RPI config.txt](https://www.raspberrypi.com/documentation/computers/config_txt.html).
+
+
+'rpi-bootfiles-secure.bb'-recipe contains all rules for fetching and executing the helper scripts from [USB-boot tools](https://github.com/raspberrypi/usbboot/tree/master), like rpi-eeprom-config, rpi-eeprom-digest and rpi-make-boot-image.
 
 Notice that because **SIGNED_BOOT**-flag is set to 1 in '/secure-boot-recovery/boot.conf', eeprom-bootloader starts to accept only signed boot.img files. 
 
@@ -67,11 +71,12 @@ From 'Cryptsetup --help':
  *Default compiled-in key and passphrase parameters:*
  *Maximum keyfile size: 8192kB, Maximum interactive passphrase length 512 (characters)*
 
-Up to eight keys can be stored into LUKS2-header, but two keys are used: 'random number' key-file and 'passphrase' key.
+Up to eight keys can be stored into LUKS2-header, but two keys are created: 'random number' key-file and 'passphrase' key.
 Both can naturally be used for encryption/decryption of the filesystem, but only random key is used in the encryption phase,
 and passphrase (by default) in the decryption phase.
 
-In this meta-layer, encryption is done already in PC-side during the building of a WIC-image.
+In this meta-layer, encryption is done already in PC-side during the building of a WIC-image (to take advantage of PC's performance).
+Only EXTx-partitions (x=2,3,4) are encrypted so far.
 
 Decryption is naturally done in the target-device. Because Linux kernel cannot execute any user-space tools (like Cryptsetup), I created InitRamfs ('early user space') for the decryption.
 
@@ -91,11 +96,11 @@ See details in comments from patch-file appended by 'wic-encrypt-partition.bb'. 
 
 ### Decrypting
 
-Cryptsetup and resize2fs are used. Default mode is to ask passphrase from the user (your 'passphrase_luks.key').
+Cryptsetup and resize2fs need to be installed into Initramfs. Default mode is to ask passphrase from the user (your 'passphrase_luks.key').
 Batch-mode is not used for Cryptsetup.
 
-Passphrase is used, because no key-file cannot be stored into the non-encrypted (boot) partition (into initramfs),
-It's relatively easy to steal the key(s) from the boot-partition (even secure boot) by the hacker.
+Passphrase is used, because no key-file cannot be stored into the non-encrypted (boot) partition (inside initramfs),
+It's relatively easy to steal the key(s) even from secured boot-partition by the hacker.
 So the user is advised to type the passphrase. Optionally keyfile could be used, if it's detected
 e.g. from USB-stick (not supported yet).
 
@@ -153,11 +158,10 @@ Create RSA-keys (**RSA2048**) for secure boot:
 
 ```
    openssl genrsa 2048 > private_sb.pem
+   // public-key is embedded into .pem-file, but rpi-eeprom-config can extract it.
+   // So no need to extract it here (openssl rsa -in private_sb.pem -pubout -out public_sb.pub)  
 
-Extract public key:
-   openssl rsa -in private_sb.pem -pubout -out public_sb.pub
-
-Copy 'private_sb.pem' and 'public_sb.pub' to '...poky/build/conf'-directory
+   Copy 'private_sb.pem' to '...poky/build/conf'-directory
 ```
 
 Create cryptographic random-key and passphrase-key for LUKS2-encryption:
@@ -212,7 +216,7 @@ ending up that Yocto-environment isn't sudoless anymore... See USB-boot tools: '
 
 **RPI_SECURE_BOOT**-flag enables the creation of boot.img and signature file.
 
-**RPI_EEPROM_BOOTLOADER_UPDATE**-flag enables the creation of Secure eeprom-bootloader.
+**RPI_EEPROM_BOOTLOADER_UPDATE**-flag enables the creation of Secure eeprom-bootloader (for Raspberry PI4/CM4).
 If the update of the bootloader into the Raspberry's EEPROM will be successfull, 
 unset the flag before the next builds.
 
@@ -233,7 +237,7 @@ But rename (or totally remove) 'recovery.bin' from SD-card manually after succes
 to WIC-variables (**WICVARS**) for accessing it in 'poky/script/lib/wic/partition.py'. I made also a receipe ('wic-encrypt-partition.bb') for patching the encryption-routine into 'partition.py'.
 
 Because Cryptsetup-tool is used for the decryption, InitRamFS (early user space) is needed.
-When setting **INITRAMFS_IMAGE** to **customized-initramfs**, InitRamFS with decryption feature is added to the image.
+When setting **INITRAMFS_IMAGE** to **customized-initramfs**, InitRamFS including decryption feature is added to the image.
 That's because 'customized-initramfs.bb' sets **INITRAMFS_SCRIPTS**-flag to **initramfs-boot-encrypted**,
 causing 'initramfs-boot-encrypted.bb' to call a script 'init-boot-encrypted.sh', which calls Cryptsetup-tool.
 Initramfs-image is NOT bundled into the kernel (**INITRAMFS_IMAGE_BUNDLE == ""**).
@@ -310,8 +314,6 @@ sudo bmaptool -d copy tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberry
 ```
 
 ## TODO: 
-- Raspberry PI5 uses other code-base for secure eeprom-bootloader.rpi-bootfiles-secure.bb: recovery.bin and bootloader under the
- '.../secure-boot-recovery5', .../rpi-eeprom/firmware2712
 - rules for creating non-secure eeprom bootloader for turning back to non-secured world
 - Compute Module: CM5 and newer seems to support -> could bootloader be updated, like for RPI4/RP5? 
    CM4 and CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from eMMC)

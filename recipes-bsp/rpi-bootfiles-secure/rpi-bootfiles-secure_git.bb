@@ -10,11 +10,11 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
 inherit deploy nopackages
 
 SRC_URI = " \
-    git://github.com/raspberrypi/usbboot.git;protocol=https;branch=pios/bookworm \
+    git://github.com/raspberrypi/usbboot.git;protocol=https;branch=master \
 "
 
-SRCREV = "df27f13707de24b7059fee180f4cefe5ae90ee81"
-PV = "20250908-162618-bookworm"
+SRCREV = "101f2d00d959855ca9acdfa9a6ee427f35d1700c"
+PV = "master_2026_02_10"
 
 COMPATIBLE_MACHINE = "^rpi$"
 
@@ -26,94 +26,26 @@ RDEPENDS:${pkgvarcheck} += " \
     e2fsprogs-mke2fs \
 "
 
-# rpi-eeprom-digest is a tool for signing boot.img file.
-# It's located in submodule (submodule rpi_eeprom.git for usbboot.git),
+# rpi-eeprom-config is a tool for creating secured eeprom-configuration.
+# rpi-eeprom-digest is a tool for signing boot.img file and secure eeprom-bootloader.
+# update-pieeprom.sh is used as frontend-script.
+# Those tools are located in submodule (submodule rpi_eeprom.git for usbboot.git),
 # so lets fetch also the submodule.
 do_configure() {
   cd ${S}
   git submodule update --init --recursive
 }
 
-do_install() {
-    install -d ${D}${bindir}
+rpi_gather_bootfiles_for_bootimg() {
+    # Gather boot-files (start4.elf, fixup4.dat, kernel, device trees etc.) from DEPLOY-folders to STAGING-dir.
+    # These files will be stored later into 'boot.img'.
 
-    # install executables (well, 'boot-image'-maker and 'secure signing'-tool
-    # most likely not even needed in RPI-target...)
-    install -m 0755 ${S}/tools/rpi-make-boot-image ${D}${bindir}
-    install -m 0755 ${S}/rpi-eeprom/rpi-eeprom-digest ${D}${bindir}
-}
-
-rpi_secure_eeprom_bootloader() {
-    # -------------------------------------------------------------------------------
-    #               Secure eeprom-bootloader
-
-    # Sign boot-config with private RSA-key 
-    # This config (/secure-boot-recovery/boot.conf) contains flag 'SIGNED_BOOT=1',
-    # but no OTP-settings, so it's still possible to roll back to non-secure world!
-
-    ${S}/rpi-eeprom/rpi-eeprom-digest \
-    -k ${TOPDIR}/conf/private_sb.pem \
-    -i ${S}/secure-boot-recovery/boot.conf \
-    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig
-    # Create secure eeprom-bootloader
-
-    ${S}/rpi-eeprom/rpi-eeprom-config \
-    -p ${TOPDIR}/conf/public_sb.pub \
-    -c ${S}/secure-boot-recovery/boot.conf \
-    -d ${STAGING_DIR_TARGET}/eeprom_bootloader/boot.conf.sig \
-    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin \
-       ${S}/rpi-eeprom/firmware-2711/latest/pieeprom-2025-08-27.bin
-
-    #  Signature-file (SHA256 checksum) for eeprom-bootloader: 
-    ${S}/rpi-eeprom/rpi-eeprom-digest \
-    -i ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin \
-    -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig
-
-    # Deploy recovery.bin, secured eeprom-bootloader and signature:
-
-    # recovery.bin on SD-card's boot-partition triggers the automatic update-process
-    # of eeprom-bootloader by first-stage ROM-bootloader.
-    cp ${S}/rpi-eeprom/firmware-2711/latest/recovery.bin ${DEPLOYDIR}
-
-    # TODO: add support for RPI5 (2712-firmware)...
-
-    # Because eeprom-bootloader below is named as 'pieeprom.upd', 'recovery.bin' will be renamed
-    # automatically to 'RECOVERY.000' after succeeded flashing of the new eeprom-bootloader.
-    # This avoids the bootloader to be flashed again and again after next boot-ups!
-
-    # If eeprom_bootloader was named to 'pieeprom.bin', RaspberryPI's leds (green/red)
-    # would indicate the progress of the flashing. In this case remember to rename (or remove)
-    # manually 'recovery.bin' on SD-card after flashing.
-
-    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.upd
-
-    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig ${DEPLOYDIR}/pieeprom.sig
-}
-
-do_deploy() {
-    install -d ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}
-    install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
-    install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
-    install -d ${STAGING_DIR_TARGET}/eeprom_bootloader
-
-    # Gather boot-files (start.elf, fixup.dat, kernel, device trees etc.) from DEPLOY-folders 
-    # to STAGING-dir. Store those files to boot.img.
-    # Sign boot.img by private RSA-key by creating boot.sig.
-    # Finally deploy boot.img and boot.sig.
-    # Optionally create secured EEPROM-bootloader, which is signed with same private RSA-key than boot.img.
-    # EEPROM-bootloader will be stored alongside boot.img and boot.sig.
-
-    # create secure eeprom-bootloader (if update-flag set)
-    if ${@bb.utils.contains('RPI_EEPROM_BOOTLOADER_UPDATE', '1', 'true', 'false', d)}; then
-        rpi_secure_eeprom_bootloader
-    fi
-
-    # Copy RPI-specific bootfiles (start.elf, fixup.dat etc)
+    # Copy RPI-specific bootfiles (start4.elf, fixup4.dat, config.txt, cmdline.txt etc)
     for i in ${DEPLOY_DIR_IMAGE}/${BOOTFILES_DIR_NAME}/* ; do
         cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
     done
 
-    # Include kernel (kernel8.img for RPI4/5), Device Tree Blobs, overlays and optionally InitRamFs to boot.img.
+    # Include kernel (kernel8.img for RPI4), Device Tree Blobs, overlays and optionally InitRamFs to boot.img.
     # If U-boot and FIT-image is enabled, include U-boot and FIT-image
     # (FIT-image contains kernel, DTBs, DTB-overlays, InitRamFS).
 
@@ -151,17 +83,23 @@ do_deploy() {
     else
         # No U-Boot
 
-        # Copy Device Tree Blobs of all RPI-models (bootloader will pickup the correct one during the boot-up)
+        # Copy Device Tree Blobs of all RPI4-models (bootloader will pickup the correct one during the boot-up)
         for i in ${DEPLOY_DIR_IMAGE}/bcm2711-rpi*.dtb ; do
-            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+            if [ ! -L "$i" ]; then
+                cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+            fi
         done
 
         # Copy Device Tree Overlays
         for i in ${DEPLOY_DIR_IMAGE}/*.dtbo ; do
-            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+            if [ ! -L "$i" ]; then
+                cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+            fi
         done
         for i in ${DEPLOY_DIR_IMAGE}/overlay*.dtb ; do
-            cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+            if [ ! -L "$i" ]; then
+                cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+            fi
         done
 
         # Copy Linux Kernel (strip '.img'-extension from kernel-file):
@@ -177,18 +115,109 @@ do_deploy() {
                ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/${INITRAMFS_IMAGE}.${INITRAMFS_FSTYPES}
         fi
     fi
+}
+
+do_install() {
+    install -d ${DEPLOYDIR}/${BOOTFILES_DIR_NAME}
+    install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+    install -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/overlays
+    install -d ${STAGING_DIR_TARGET}/eeprom_bootloader
+
+}
+
+rpi4_secure_eeprom_bootloader() {
+    # -------------------------------------------------------------------------------
+    #               Secure eeprom-bootloader for Raspberry PI4
+
+    # update-pieeprom.sh executes next steps:
+    # 
+    # EEPROM's default boot-configuration 'secure-boot-recovery/boot.conf' is used.
+    # Configuration contains flag 'SIGNED_BOOT=1', but no OTP-settings for locking
+    # eeprom-bootloader forever to secured one. So it's still possible to roll back to non-secure world!
+    # User's public RSA-key is included into boot-config, so that bootloader can 'open' signed boot.img
+    # (rpi-eeprom-config can extract public key from private.pem file...).
+    # boot-config is signed with user's private RSA-key (RSA2048).
+    # Secured boot-config is included into bootloader (pieeprom.bin). 
+    # signature-file 'pieeprom.sec' (SHA256 checksum) is created for eeprom-bootloader.
+
+    cd ${S}/secure-boot-recovery/
+
+    ../tools/update-pieeprom.sh -k ${TOPDIR}/conf/private_sb.pem \
+                                -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin
+
+    # Deploy recovery.bin, secured eeprom-bootloader and signature:
+
+    # recovery.bin on SD-card's boot-partition triggers the automatic update-process
+    # of eeprom-bootloader by first-stage ROM-bootloader
+    # (bootcode4.bin is symbolic link to ../rpi-eeprom/firmware-2711/latest/recovery.bin)
+    cp bootcode4.bin ${DEPLOYDIR}/recovery.bin
+
+    # Because eeprom-bootloader below is named as 'pieeprom.upd', 'recovery.bin' will be renamed
+    # automatically to 'RECOVERY.000' after succeeded flashing of the new eeprom-bootloader.
+    # This avoids the bootloader to be flashed again and again after next boot-ups!
+
+    # If eeprom_bootloader was named to 'pieeprom.bin', RaspberryPI's leds & HDMI-output
+    # would indicate the progress of the flashing (green/red). In this case remember to rename
+    # (or remove) manually 'recovery.bin' on SD-card after flashing.
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.bin ${DEPLOYDIR}/pieeprom.upd
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_secure.sig ${DEPLOYDIR}/pieeprom.sig
+}
+
+rpi4_non_secure_eeprom_bootloader() {
+    # -------------------------------------------------------------------------------
+    #               Non-Secure eeprom-bootloader for Raspberry PI4
+
+    cd ${S}/recovery/
+
+    ./update-pieeprom.sh -o ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_non_secure.bin
+
+    # Deploy recovery.bin, eeprom-bootloader and signature:
+
+    # bootcode4.bin is symbolic link to ../rpi-eeprom/firmware-2711/latest/recovery.bin
+    cp bootcode4.bin ${DEPLOYDIR}/recovery.bin
+
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_non_secure.bin ${DEPLOYDIR}/pieeprom.upd
+    cp ${STAGING_DIR_TARGET}/eeprom_bootloader/pieeprom_non_secure.sig ${DEPLOYDIR}/pieeprom.sig
+}
+
+do_deploy() {
+    # Store boot-files from DEPLOY-dir to STAGING-dir 
+    rpi_gather_bootfiles_for_bootimg
+
+    # Store boot-files from STAGING-dir to boot.img.
+    # Sign boot.img by private RSA-key by creating boot.sig.
+    # Finally deploy boot.img and boot.sig.
+    # Optionally create secured EEPROM-bootloader, which is signed with same private RSA-key than boot.img.
+    # EEPROM-bootloader will be stored alongside boot.img and boot.sig.
+
+    if ${@bb.utils.contains('RPI_EEPROM_BOOTLOADER_UPDATE', '1', 'true', 'false', d)}; then
+        # update eeprom-bootloader
+        if ${@bb.utils.contains('MACHINE', 'raspberrypi4-64', 'true', 'false', d)}; then
+            if ${@bb.utils.contains('RPI_SECURE_BOOT', '1', 'true', 'false', d)}; then
+                # create secure eeprom-bootloader
+                rpi4_secure_eeprom_bootloader
+            fi
+        #else RPI5 not supported: boot.img could be verified by setting 'boot_ramdisk=1' in 'config.txt'
+        fi
+    fi
 
     # create boot.img using RPI's shell script
-    ${S}/tools/rpi-make-boot-image  -b pi4 -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}/ -o ${DEPLOYDIR}/boot.img
+    # TODO: create boot.img for Raspberry PI5...
+    ${S}/tools/rpi-make-boot-image \
+        -b pi4 \
+        -d ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME} \
+        -o ${DEPLOYDIR}/boot.img
     
     # return '.img' extension to kernel-file
     mren -i "${DEPLOYDIR}/boot.img" $(basename  -s .img ${SDIMG_KERNELIMAGE}) ::${SDIMG_KERNELIMAGE}
 
     # create 'boot.sig' by signing 'boot.img' with private RSA-key
     ${S}/rpi-eeprom/rpi-eeprom-digest \
-    -k ${TOPDIR}/conf/private_sb.pem \
-    -i ${DEPLOYDIR}/boot.img \
-    -o ${DEPLOYDIR}/boot.sig
+        -k ${TOPDIR}/conf/private_sb.pem \
+        -i ${DEPLOYDIR}/boot.img \
+        -o ${DEPLOYDIR}/boot.sig
 
     # Add stamp in deploy directory
     touch ${DEPLOYDIR}/${PN}-${PV}.stamp
@@ -197,7 +226,7 @@ do_deploy() {
 # prevent shell-scripts (rpi-make-boot-image, rpi-eeprom-digest) to be compiled!
 do_compile[noexec] = "1"
 
-# bootloders, kernel etc. have to exist in DEPLOY-dir, before this recipe can do it's job
+# bootloaders, kernel etc. have to exist in DEPLOY-dir, before this recipe can do it's job
 do_deploy[depends] += "rpi-config:do_deploy rpi-cmdline:do_deploy \
                        rpi-bootfiles:do_deploy u-boot:do_deploy \
                        virtual/kernel:do_deploy \
