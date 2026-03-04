@@ -83,12 +83,22 @@ rpi_gather_bootfiles_for_bootimg() {
     else
         # No U-Boot
 
-        # Copy Device Tree Blobs of all RPI4-models (bootloader will pickup the correct one during the boot-up)
-        for i in ${DEPLOY_DIR_IMAGE}/bcm2711-rpi*.dtb ; do
-            if [ ! -L "$i" ]; then
-                cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
-            fi
-        done
+        if ${@bb.utils.contains('MACHINE', 'raspberrypi4-64', 'true', 'false', d)}; then
+            # Copy Device Tree Blobs of all RPI4-models (bootloader will pickup the correct one during the boot-up)
+            for i in ${DEPLOY_DIR_IMAGE}/bcm2711-rpi*.dtb ; do
+                if [ ! -L "$i" ]; then
+                    cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+                fi
+            done
+        fi
+        if ${@bb.utils.contains('MACHINE', 'raspberrypi5', 'true', 'false', d)}; then
+            # Copy Device Tree Blobs of all RPI4-models (bootloader will pickup the correct one during the boot-up)
+            for i in ${DEPLOY_DIR_IMAGE}/bcm2712-rpi*.dtb ; do
+                if [ ! -L "$i" ]; then
+                    cp $i ${STAGING_DIR_TARGET}/${BOOTFILES_DIR_NAME}
+                fi
+            done
+        fi
 
         # Copy Device Tree Overlays
         for i in ${DEPLOY_DIR_IMAGE}/*.dtbo ; do
