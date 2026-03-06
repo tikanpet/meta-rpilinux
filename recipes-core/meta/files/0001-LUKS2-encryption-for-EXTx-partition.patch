@@ -1,16 +1,16 @@
-From 98320bd3d682ea0f8dfa5308d748cb92406c18f9 Mon Sep 17 00:00:00 2001
+From 4fa969203355ebb9de9f9868619b3b4c23d7da7c Mon Sep 17 00:00:00 2001
 From: tikanpet <tikanderp@gmail.com>
-Date: Mon, 9 Feb 2026 22:28:04 +0200
+Date: Thu, 5 Mar 2026 15:20:06 +0200
 Subject: [PATCH] LUKS2-encryption for EXTx-partition. So the encrypted
  partition is included directly in WIC-image when building the image. New
- function encrypt_rootfs_ext() is added in 
+ function 'encrypt_rootfs_ext()' is added in
  'poky/scripts/lib/wic/partition.py', which encrypts the root-filesystem using
  Cryptsetup. encrypt_rootfs_ext(), and changes for growing the partition for
  LUKS2-header are patched with 'wic-tools-encrypt.bb'. Encrypting is done
- afterwards. So filesystem-data is already written into the partition:
+ afterwards. So filesystem-data is already available in the partition:
 
-"reencrypt --disable-locks --reduce-device-size 16M
---force-offline-reencrypt --keyfile luks.key.."
+  "reencrypt --disable-locks --reduce-device-size 16M
+  --force-offline-reencrypt --keyfile luks.key.."
 
 This way the usage of 'sudo' is avoided, and Yocto remains sudoless.
 
@@ -21,18 +21,18 @@ a convenient way for the user for opening the encrypted partition in
 target device (in Initramfs). So create the passphrase key, and store as
   'poky/build/conf/passphrase_luks.key'.
 
-ALso next new flag has to be added in 'poky/build/local.conf' for enabling
-the encryption:
-  WICVARS:append = " LUKS2_ENCRYPT"
-  LUKS2_ENCRYPT = "1"
+Also next new flag has to be added in 'poky/build/local.conf' for enabling the encryption:
+   WICVARS:append = " LUKS2_ENCRYPT"
+   LUKS2_ENCRYPT = "1"
 
+Upstream-Status: Pending
 Signed-off-by: tikanpet <tikanderp@gmail.com>
 ---
- scripts/lib/wic/partition.py | 80 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 80 insertions(+)
+ scripts/lib/wic/partition.py | 90 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
 diff --git a/scripts/lib/wic/partition.py b/scripts/lib/wic/partition.py
-index bf2c34d594..ec16cdc42d 100644
+index bf2c34d594..98f7a5e8a1 100644
 --- a/scripts/lib/wic/partition.py
 +++ b/scripts/lib/wic/partition.py
 @@ -20,6 +20,9 @@ from wic.pluginbase import PluginMgr
@@ -56,7 +56,7 @@ index bf2c34d594..ec16cdc42d 100644
          with open(rootfs, 'w') as sparse:
              os.ftruncate(sparse.fileno(), rootfs_size * 1024)
  
-@@ -333,6 +340,79 @@ class Partition():
+@@ -333,6 +340,89 @@ class Partition():
  
          self.check_for_Y2038_problem(rootfs, native_sysroot)
  
@@ -69,6 +69,10 @@ index bf2c34d594..ec16cdc42d 100644
 +        if get_bitbake_var("LUKS2_ENCRYPT") != "1":
 +            # encryption disabled
 +            return
++
++        logger.info("Encrypt the partition (LUKS2) \n")
++        logger.info("Label = %s, disk = %s, filesystem type = %s) \n"
++                     %(self.label, self.disk, self.fstype))
 +
 +        # Encrypt the file system with LUKS (using 'CryptSetup'-tool).
 +        # LUKS-header (LUKS2-version by default) requires some space in the beginning
@@ -123,11 +127,17 @@ index bf2c34d594..ec16cdc42d 100644
 +                     --disable-locks --force-offline-reencrypt %s" % (encrypt_keyfile, rootfs)
 +        exec_native_cmd(crypt_cmd, native_sysroot, None)
 +
-+        # add secondary LUKS-key (passphrase),
-+        # which is default way for opening the LUKS-encryption in the target device (in InitRamFS)
++        # add secondary LUKS-key (passphrase), which is default way for opening
++        # the LUKS-encryption in the target device (in InitRamFS)
 +        crypt_cmd = "cryptsetup luksAddKey -v -q %s --new-keyfile %s --key-file %s" \
 +                      % (rootfs, encrypt_passphrase_keyfile, encrypt_keyfile)
-+        exec_native_cmd(crypt_cmd, native_sysroot, None)
++        ret, out = exec_native_cmd(crypt_cmd, native_sysroot, None)
++
++        if ret != 0:
++            raise WicError("Encryption failed")
++
++        logger.info("Encryption succesfull")
++
 +        # Filesystem is now encrypted, and two security keys are added.
 +        # Resizing for using the whole partition (resize2fs /dev/mapper/decrypt)
 +        # is still required, but to avoid root-accesses here (opening the LUKS-container),
