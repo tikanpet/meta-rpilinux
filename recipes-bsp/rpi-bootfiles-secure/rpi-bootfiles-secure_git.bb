@@ -4,8 +4,9 @@ for creating signed boot image (boot.img & boot.sig) \
 and secure eeprom-bootloader for verifying and loading boot.img. \
 Also recovery.bin is deployed for updating eeprom-bootloader automatically \
 on the target device."
-LICENSE = "Broadcom-RPi"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=e3fc50a88d0a364313df4b21ef20c29e"
+
+LICENSE = "GPL-2.0-or-later"
+LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0-or-later;md5=fed54355545ffd980b814dab4a3b312c"
 
 inherit deploy nopackages
 
