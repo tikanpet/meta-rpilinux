@@ -25,26 +25,22 @@ required to get RPI booted up, so in the case of RPI4/CM4 at least:
 See [Raspberry PI4 Boot Security](https://pip-assets.raspberrypi.com/categories/1260-security/documents/RP-004651-WP-2-Raspberry%20Pi%204%20Boot%20Security.pdf?disposition=inline) for details.
 
 
-'boot.img' is secured by calculating an unique signature (a kind of checksum of the file content), and encrypting
-it with customer's private RSA-key. Secured signature is stored to 'boot.sig' file. EEPROM-bootloader running in RPI- target device calculates the signature of the 'boot.img', opens the corresponding signature from 'boot.sig' with customer's public RSA-key (stored to Raspberry Pi's EEPROM), and compares those signatures. If signatures match, booting process will continue. Avoid to publish your private key, so never store it at least in Raspberry PI. 
+'boot.img' is secured by calculating an unique signature (hexadecimal sha256 checksum of the file content), and encrypting it with customer's private RSA-key. Secured signature is stored to 'boot.sig' file. EEPROM-bootloader running in RPI- target device calculates the signature of the 'boot.img', opens the corresponding signature from 'boot.sig' with customer's public RSA-key (stored to Raspberry Pi's EEPROM), and compares those signatures. If signatures match, booting process will continue. Avoid to publish your private key, so never store it at least in Raspberry PI. 
 
 Eeprom-bootloader has to be updated (with secure boot-configuration). Customer's public RSA-key is stored to EEPROM-configuration, when secured EEPROM-bootloader is written to EEPROM. Also EEPROM-bootloader is signed by ROM-bootloader (first stage bootloader). ROM-bootloader can then start the eeprom-bootloader securely at the first place, by verifying signature with public RSA-key stored in ROM (and OTP?). Secure eeprom-bootloader can then verify and load the contents from boot.img.
 
-Naturally a hacker could create a new customer key-pair, but if public key (or actually the hash of the key) is stored ('fused') to RPI's OTP, it cannot be changed anymore by hacker's public key. And because private key is unique for single public key, it cannot be changed either. If someone without knowing the original private key tries to alter some of the boot-files, booting process will stop. In the future quantum-computer can possible derive the private key by calculating from public key...
+Naturally a hacker could create a new customer key-pair, but if public key (or actually the hash of the key) is locked by storing ('fusing') to RPI's OTP, it cannot be changed anymore by hacker's public key. And because private key is unique for single public key, it cannot be changed either. If someone without knowing the original private key tries to alter some of the boot-files, booting process will stop. In the future quantum-computer can possible derive the private key from public key by calculating...
 
 Signed security is only available on the B1/C0 stepping of the BCM2711 SOC. The B0 stepping does not have the RSA public
-keys in its ROM that would be needed for the ROM to verify the EEPROM-bootloader.
-So with B0-stepping it's always possible to switch back to nonsecure eeprom-bootloader. With newer SOCs, secure eeprom-bootloader and RSA-key can be locked, to avoid to flash a non-secure eeprom bootloader anymore or change RSA-public key. 
+keys in its ROM that would be needed for the ROM to verify the EEPROM-bootloader. So with B0-stepping it's always possible to switch back to nonsecure eeprom-bootloader. With newer SOCs, secure eeprom-bootloader and RSA-key can be locked, to avoid to flash a non-secure eeprom bootloader anymore or change RSA-public key. I myself own only B0 stepping-board, so I cannot lock eeprom bootloader.
 
-I myself unfortunately own only B0 stepping-board.
+With 'meta-rpilinux' meta-layer, you can do first steps towards the final secure-boot (creating secured eeprom-bootloader, boot.img and boot.sig), and get the good feeling about, how it works. If you hesitate, you can easily still flash the original non-secure eeprom bootloader, and continue without using 'boot.img' and 'boot.sig'. eeprom-bootloader within public RSA-key can be automatically updated to RPI's eeprom in the case of RPI4/400-models (not with CM4/4S). 'meta-rpilinux' stores the bootloader with recovery.bin in the boot-partition of SD-card. So update will start automatically, when RPI boots up.
 
-With 'meta-rpilinux' meta-layer, you can do first steps towards the final secure-boot (creating secured eeprom-bootloader, boot.img and boot.sig), and get the good feeling about, how it works. If you hesitate, you can easily still flash the original non-secure eeprom bootloader, and continue without using 'boot.img' and 'boot.sig'.
-
-This metalayer has **no support** for creating a secured eeprom-bootloader for **Raspberry PI5/CM5**. Unlike BCM2711 (RPI4/CM4), BCM2712 SOC doesn't have support to test a secured eeprom-bootloader. But it's possible to check the signed boot.img by modifying 'config.txt':
-**boot_ramdisk = 1** ([RPI config.txt](https://www.raspberrypi.com/documentation/computers/config_txt.html).
+Although RPI5/CM5-eeprom bootloader could also be updated automatically, this metalayer has **no support** for creating a secured eeprom-bootloader for **Raspberry PI5/CM5**. Unlike BCM2711 (RPI4/CM4), BCM2712 SOC doesn't have support to test a secured eeprom-bootloader without locking it. But it's possible to check the signed boot.img by modifying 'config.txt':
+**boot_ramdisk = 1** ([RPI config.txt](https://www.raspberrypi.com/documentation/computers/config_txt.html)).
 
 
-'rpi-bootfiles-secure.bb'-recipe contains all rules for fetching and executing the helper scripts from [USB-boot tools](https://github.com/raspberrypi/usbboot/tree/master), like rpi-eeprom-config, rpi-eeprom-digest and rpi-make-boot-image.
+**'rpi-bootfiles-secure.bb'**-recipe contains all rules for fetching and executing the helper scripts from [USB-boot tools](https://github.com/raspberrypi/usbboot/tree/master), like rpi-eeprom-config, rpi-eeprom-digest and rpi-make-boot-image. **rpiboot**-tool is also found there for updating eeprom-bootloader and locking the device for secure-boot via **USB**.
 
 Notice that because **SIGNED_BOOT**-flag is set to 1 in '/secure-boot-recovery/boot.conf', eeprom-bootloader starts to accept only signed boot.img files. 
 
@@ -265,8 +261,8 @@ Then flash the image:
 sudo bmaptool -d copy tmp/deploy/images/raspberrypi4-64/rpilinux-image-raspberrypi4-64.rootfs-xxxxx.wic.bz2 /dev/mmcblk0
 ```
 Connect your USB-keyboard and monitor debug-messaging from e.g. HDMI-display after powering your device on.
-'Secure Boot' message should be prompted when secondary bootloader is started.
-When kernel starts, it executes Initramfs, where user is advised to type Passphrase (for LUKS-decryption).
+**'secure-boot'** and **Loading boot.img** messages should be prompted, when secondary bootloader is started.
+When kernel starts, it executes Initramfs, where user is advised to **type Passphrase** (for LUKS-decryption).
 
 ## Details for configuration settings:
 
@@ -282,15 +278,12 @@ unset the flag before the next builds.
 
 'pieeprom.upd', 'pieeprom.sig' and 'recovery.bin' are created for eeprom-bootloader, and stored during the building
 alongside 'boot.img' and 'boot.sig' into the boot-partition.
-If ROM-bootloader (after switching RPI's power on) detects 'recovery.bin' from the **SD-card**, updating of eeprom-bootloader to a newer version (a secured one) starts automatically instead of the bootup process. Possibly Compute Modules CM4/CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from **eMMC**). Instead CM5 and newer versions might support of loading of recovery.bin from eMMC?
+If ROM-bootloader (after switching RPI's power on) detects 'recovery.bin' from the **SD-card**, updating of eeprom-bootloader to a newer version (a secured one) starts automatically instead of the bootup process. Compute Modules CM4/CM4S don't support automatic updates (ROM-bootloader cannot load recovery.bin from **eMMC**). Instead CM5 and newer versions might support of loading of recovery.bin from eMMC? See [Update the bootloader](https://www.raspberrypi.com/documentation/computers/raspberry-pi.html)/'Update the bootloader' for more details.
 
-Unfortunately there are no good indicators for showing the progress of the update 
-(when bootloader is named as 'pieeprom.upd'), unless you have a setup serial connection for debug-messaging.
-If the update succeeded, 'recovery.bin' would be automatically renamed to 'RECOVERY.000' for avoiding 
+Unfortunately there are no good indicators for showing the progress of the update (when bootloader is named as 'pieeprom.upd'), unless you have a setup serial connection for debug-messaging. If the update succeeded, 'recovery.bin' would be automatically renamed to 'RECOVERY.000' for avoiding 
 the eternal loop of the updates...
 
-You can also rename 'pieeprom.upd' to 'pieeprom.bin' (from rpi-bootfiles-secure.bb/rpi_secure_eeprom_bootloader and rpilinux-image.bb)
-for getting green led flashing rapidly during the flashing (red led to indicate the failure).
+You can also rename 'pieeprom.upd' to 'pieeprom.bin' (from rpi-bootfiles-secure.bb/rpi_secure_eeprom_bootloader and rpilinux-image.bb) for getting green led flashing rapidly during the flashing (red led to indicate the failure).
 But rename (or totally remove) 'recovery.bin' from SD-card manually after successfull flashing...
 
 **LUKS2_ENCRYPT**-flag enables the encryption of EXTx-partition (containing the root filesystem). This flag has to be appended
