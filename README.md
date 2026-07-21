@@ -59,7 +59,7 @@ From 'Cryptsetup --help':
  *Default compiled-in key and passphrase parameters:*
  *Maximum keyfile size: 8192kB, Maximum interactive passphrase length 512 (characters)*
 
-Master-key is secured from the hacker, but remember to keep all user-keys in secret place.
+Master-key is secured from a hacker, but remember to keep all user-keys in the secret place.
 
 Up to eight user-keys can be stored into LUKS2-header, but two keys are created: 'random number' key-file and 'passphrase' key. Both can naturally be used for encryption/decryption of the filesystem, but only random key is used in the encryption phase, and passphrase (by default) in the decryption phase.
 
@@ -77,7 +77,7 @@ A partition containing rootfile-system is encrypted already during 'bitbaking' t
 Yocto doesn't allow any user-action, so Cryptsetup is disallowed to ask any confirmation. Otherwise the build will fail.
 Therefore, a 'random-value' keyfile is used instead of asking a passphrase from the user, and batch-mode is enabled.
 
-Yocto doesn't allow any root-accesses as well. So to avoid 'sudoing', Yocto's procedure for creating WIC-image hasn't access any '/dev'-interface (like /dev/loop/) when formatting the EXTx-partition (and storing the file system there). Instead a specific file (a sparse type) was created as EXTx-formatted. But now when adding encryption-logic, Cryptsetup accesses other root-directory: '/run' by default...
+Yocto doesn't allow any root-accesses as well. So when creating a WIC-image, to avoid 'sudoing' Yocto doesn't access any '/dev'-interface (like /dev/loop/), when formatting the EXTx-partition (and storing the file system there). Instead a specific file (a sparse type) was created as EXTx-formatted. But now when adding encryption-logic, Cryptsetup accesses other root-directory: '/run' by default...
 
 To avoid usage of /run-folder, **'--disable-locks'**-option is used for allowing Cryptsetup to be executed without 'sudo'.
 
